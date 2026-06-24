@@ -30,7 +30,7 @@ namespace DataStructure
 
             if (item[input - 1].type == Item.Type.Usable)
             {
-                Console.WriteLine($"{item[input - 1].name}을 사용했다.");
+                item[input - 1].Use();
                 item.RemoveAt(input - 1);
             }
             else
@@ -176,8 +176,6 @@ namespace DataStructure
         public override void Use()
         {
             Console.WriteLine($"{name}을 사용했다.");
-
-            
         }
 
     }
@@ -197,6 +195,11 @@ namespace DataStructure
         {
             name = "열쇠";
             type = Type.Usable;
+        }
+
+        public override void Use()
+        {
+            Console.WriteLine($"{name}을 사용했다.");
         }
     }
 
