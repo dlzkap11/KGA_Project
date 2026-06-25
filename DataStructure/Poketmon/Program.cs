@@ -2,7 +2,7 @@
 
 namespace Poketmon
 {
-    internal class Program
+    public class Program
     {
         public static Stack<UI> PoketmonUI = new Stack<UI>();
         public static Queue<string> queue = new Queue<string>();
@@ -30,8 +30,6 @@ namespace Poketmon
 
         // 가방 내용물 확인
 
-        // 기술 클래스
-        // 기술명, 위력, 타입, 명중률
 
 
         static void Main(string[] args)
@@ -124,18 +122,16 @@ namespace Poketmon
 
         static void Wild()
         {
-            // 포켓몬 등장
-            Console.WriteLine("!야생의 포켓몬이 나타났다!");
-            
+            // 처음 출현 시 포켓몬 생성
+            if(EnemyPoketmon.Name == "")
+            {
+                Console.WriteLine($"{player.Name}! 야생의 포켓몬이 나타났다!");
+                Random rand = new Random();
+                int r = rand.Next(0, 2);
+                EnemyPoketmon = poketmons[r % poketmons.Length];
+            }
 
-            // 랜덤 출현
-            EnemyPoketmon = poketmons[0 % 3];
-            // 상대 포켓몬 상태
-            EnemyPoketmon.PrintInfo();
-            Console.WriteLine("===============================");
-            // 내 포켓몬 상태
-            player.MyPoketmon[0].PrintInfo();
-            Console.WriteLine("===============================");
+            PrintInfo();
 
             // 선택지 UI
             Console.WriteLine("1)싸운다    2)가방");
@@ -165,10 +161,61 @@ namespace Poketmon
             }
         }
 
+        static void PrintInfo()
+        {
+            // 상대 포켓몬 상태
+            EnemyPoketmon.PrintInfo();
+            Console.WriteLine("===============================");
+            // 내 포켓몬 상태
+            player.MyPoketmon[0].PrintInfo();
+            Console.WriteLine("===============================\n");
+        }
 
         static void Battle()
         {
+            PrintInfo();
+            Poketmons p = player.MyPoketmon[0];
+            Console.WriteLine($"1){() => (p.Skill[0] == null ? " " : p.Skill[0].name)} 2){() => (p.Skill[1] == null ? " " : p.Skill[1].name)}");
+            Console.WriteLine($"3){() => (p.Skill[2] == null ? " " : p.Skill[2].name)} 4){() => (p.Skill[3] == null ? " " : p.Skill[3].name)}");
+            Console.WriteLine("0)취소");
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "0":
+                    PoketmonUI.Pop();
+                    break;
+                case "1":
+                    if (p.Skill.Count < 2) //1개는 바둥바둥
+                    {
+                        //기술이 없으면 바둥바둥쓰기
+                        p.Skill[0].skill();
+                        Thread.Sleep(1500);
+                        break;
+                    }
+                    p.Skill[1].skill();
 
+                    break;
+                case "2":
+                    if (p.Skill.Count < 3)
+                        break;
+                    p.Skill[2].skill();
+
+                    break;
+                case "3":
+                    if (p.Skill.Count < 4)
+                        break;
+                    p.Skill[3].skill();
+                    break;
+                case "4":
+                    if (p.Skill.Count < 5)
+                        break;
+                    p.Skill[4].skill();
+                    break;
+                default:
+                    break;
+
+            }
+            
         }
 
         static void CheckBag()

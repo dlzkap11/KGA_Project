@@ -18,6 +18,9 @@ namespace Poketmon
         // 생존여부
         public bool IsAlive => Hp > 0;
 
+        // 기술리스트 최대 4개
+        public List<Skills> Skill = new List<Skills>();
+
         public Poketmons()
         {
             Name = string.Empty;
@@ -32,10 +35,11 @@ namespace Poketmon
             Atk = level * 2;
             Def = level * 2 + 1;
             Speed = level * 3;
+            Skill.Add(new Badoong());
         }
 
-        // 기술리스트? 최대 4개
-        List<Skills> Skill = new List<Skills>();
+        
+        
 
 
         // 상태표기
@@ -45,12 +49,12 @@ namespace Poketmon
         }
 
         // 공격
-        public void Attack()
+        public void Attack(Poketmons target)
         {
             
         }
         // 피격
-        public void TakeDamage()
+        public void TakeDamage(int damage)
         {
 
         }
