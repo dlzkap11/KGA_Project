@@ -1,15 +1,10 @@
 ﻿using System.Reflection.Metadata;
 using System.Security.Cryptography.X509Certificates;
 
-namespace DataStructure
+namespace Inventory
 {
     internal class Program
     {
-        //아이템 사용
-        //사용할 아이템을 고르세요 -> 아이템 리스트
-        //해당 아이템을 고르면 아이템 타입에 따라 장착하거나 마시거나 쓰거나 등등
-        //이 후 아이템은 인벤토리에서 삭제
-        //
         static void UseItem(List<Item> item)
         {
             int input = -1;
@@ -107,10 +102,14 @@ namespace DataStructure
             }
             Console.WriteLine();
         }
-
+        public static List<Item> inventory = new List<Item>();
         static void Main(string[] args)
         {
-            List<Item> inventory = new List<Item>();
+            //List<Item> inventory = new List<Item>();
+            //TODO stack으로 뒤로가기 만들기...
+            //stack pop으로 뒤로가고 push로 다음 ui로 넘어가기..를 추가하기
+            // 구매 판매 구현
+
             int input = -1;
 
             while(input != 0)
