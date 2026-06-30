@@ -37,8 +37,7 @@ namespace Algorithm
             //주어진 리스트에서 가장 작은값 두개 구하기
             List<int> list = new List<int> { 11, 17, 33, 27, 50, 7, 22, 43 };
 
-
-            Console.WriteLine($"최소값과 최대값을 제외한 평균 점수 : {list.GetAverage}");
+            Console.WriteLine($"최소값과 최대값을 제외한 평균 점수 : {list.GetAverage()}");
             //Console.WriteLine($"최소값과 최대값을 제외한 평균 점수 : {GetAverage(list)}");
         }
 
