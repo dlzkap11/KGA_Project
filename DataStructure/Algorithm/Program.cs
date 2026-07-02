@@ -3,6 +3,8 @@ using System.Data;
 
 namespace Sort
 {
+    
+
     public static class Extension
     {
         //모든 정렬은 오름차순을 기준으로
@@ -162,63 +164,10 @@ namespace Sort
 
     }
 
-    internal class Program
+    public class Program
     {
-        class Pos
-        {
-            public Pos(int y, int x) { Y = y; X = x; }
-            public int Y;
-            public int X;
-        }
 
-        public int PosX { get; set; }
-        public int PosY { get; set; }
-
-        void BFS()
-        {
-            int[] deltaY = new int[] { -1, 0, 1, 0 };
-            int[] deltaX = new int[] { 0, -1, 0, 1 };
-
-
-            bool[,] found = new bool[_board.Size, _board.Size];
-            Pos[,] parent = new Pos[_board.Size, _board.Size];
-
-
-
-            Queue<Pos> q = new Queue<Pos>();
-            q.Enqueue(new Pos(PosY, PosX));
-            found[PosY, PosX] = true;
-            parent[PosY, PosX] = new Pos(PosY, PosX);
-
-            while (q.Count > 0)
-            {
-                Pos pos = q.Dequeue();
-                int nowY = pos.Y;
-                int nowX = pos.X;
-
-                for (int i = 0; i < 4; i++)
-                {
-                    int nextY = nowY + deltaY[i];
-                    int nextX = nowX + deltaX[i];
-
-
-                    if (nextX < 0 || nextX >= _board.Size || nextY < 0 || nextY >= _board.Size) //보드사이즈보다 크거나 작은 값에 대한 예외처리
-                        continue;
-                    if (_board.Tile[nextY, nextX] == Board.TileType.Wall)
-                        continue;
-                    if (found[nextY, nextX])
-                        continue;
-
-                    q.Enqueue(new Pos(nextY, nextX));
-                    found[nextY, nextX] = true;
-                    parent[nextY, nextX] = new Pos(nowY, nowX);
-                }
-            }
-
-            CalcPathFromParent(parent);
-        }
-
-        struct Node
+        public struct Node
         {
             public int Row;
             public int Col;
@@ -230,23 +179,27 @@ namespace Sort
             
         }
 
-        static int[,] Map =
+        public static int[,] Map =
         {   //Map[y, x]
             { 0,0,0,0,0},
-            { 0,1,1,1,1},
+            { 0,1,1,1,0},
             { 0,1,0,0,0},
             { 0,1,0,1,1},
-            { 0,0,0,1,0}
+            { 0,1,0,0,0}
         };
         // 왼 오 아 위
-        static int[] directRow = { -1, 1, 0, 0 };
-        static int[] directColumn = { 0, 0, 1, -1 };
+        public static int[] directRow = { -1, 1, 0, 0 };
+        public static int[] directColumn = { 0, 0, 1, -1 };
+
+        static bool[,] isVisited;
 
         static int BFSPath(int startR, int startC, int endR, int endC)
         {
             // 시작점에서 도착점까지의 최단거리를 저장해두기
             // 한칸씩 탐색하면서 현재까지의 거리 저장
             // 도착하면 해당 변수의 내용이 최단거리고 그걸 리턴하면 되나?
+
+            
 
             //맵 크기
             int mapRows = Map.GetLength(0);
@@ -297,16 +250,237 @@ namespace Sort
             return -1;
         }
 
+        static List<Node> BFSFindPath(int startR, int startC, int endR, int endC)
+        {
+            // 맵의 크기를 캐싱해둔다.
+            int mapRows = Map.GetLength(0);
+            int mapCols = Map.GetLength(1);
+
+            //거리를 저장하는 배열
+            int[,] dist = new int[mapRows, mapCols];
+
+            // 경로를 역추적하기 위해서 이동 직전에 있었던 좌표를 저장
+            Node[,] prevNodes = new Node[mapRows, mapCols];
+
+            // 초기화
+            for (int i = 0; i < mapRows; i++)
+            {
+                for (int j = 0; j < mapCols; j++)
+                {
+                    dist[i, j] = -1;
+                    // 이전에는 최단거리를 저장하는 배열만 초기화 했다면, 이전 경로를 저장하는 배열도 초기화
+                    prevNodes[i, j] = new Node(-1, -1);
+                }
+            }
+            Queue<Node> bfsQueue = new Queue<Node>();
+            bfsQueue.Enqueue(new Node(startR, startC));
+            dist[startR, startC] = 0;
+
+            while (bfsQueue.Count > 0)
+            {
+                Node currentNode = bfsQueue.Dequeue();
+                int currentRow = currentNode.Row;
+                int currentCol = currentNode.Col;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int moveRow = currentRow + directRow[i];
+                    int moveCol = currentCol + directColumn[i];
+
+                    if (moveRow < 0 || moveRow >= mapRows || moveCol < 0 || moveCol >= mapCols)
+                        continue;
+
+                    if (Map[moveRow, moveCol] == 1)
+                        continue;
+
+                    if (dist[moveRow, moveCol] != -1)
+                        continue;
+
+                    dist[moveRow, moveCol] = dist[moveRow, moveCol] + 1;
+
+                    // 이전 경로까지 여기에서 저장을 해준다.
+                    // 현재 moveRow, moveCol 같은 경우 current에서 상,하,좌,우로 움직인 상황
+                    // 그렇다면, 이동하려고 하는 위치에, 현재 위치 경로를 저장해두면, 경로를 저장해둔것과 같다.
+                    prevNodes[moveRow, moveCol] = new Node(currentRow, currentCol);
+
+                    bfsQueue.Enqueue(new Node(moveRow, moveCol));
+                }
+            }
+
+            // 도착점의 거리가 -1 == 제대로 도달하지 못한경우.
+            // null 을 반환하여 제대로된 경로가 아님을 알려주어야함. 
+            if (dist[endR, endC] == -1)
+                return null;
+
+            // 여기서부터는 prevNodes 라고하는 경로를 저장한 배열을 가지고 경로 추적을 해주면됨.
+            // 역추적해서 결과를 담아서 반환할 리스트
+            List<Node> path = new List<Node>();
+
+            Node current = new Node(endC, endR);
 
 
+            // 맵의 끝까지 도달했을때 종료.
+            while (current.Row != -1)
+            {
+                // 역추적은 도착점 -> 시작점 순서로 진행
+                // 사람들이 보기엔 시작점 -> 도착점이 자연스러우므로
+                // 앞쪽부터 넣어서 마지막이 끝이 되도록
+                path.Insert(0, current);
+
+                // 현재 좌표에서 이전좌표로 이동시킨다.
+                current = prevNodes[current.Row, current.Col];
+            }
+            return path;
+        }
+
+        static List<Node> BFSFindPath2(int startR, int startC, int endR, int endC)
+        {
+            //맵 크기
+            int mapRows = Map.GetLength(0);
+            int mapCols = Map.GetLength(1);
+
+            int[,] dist = new int[mapRows, mapCols];
+            for (int i = 0; i < mapRows; i++)
+            {
+                for (int j = 0; j < mapCols; j++)
+                {
+                    dist[i, j] = -1;
+                }
+            }
+
+            Stack<Node> bfsStack = new Stack<Node>();
+            List<Node> way = new List<Node>();
+            bfsStack.Push(new Node(endR, endC));
+            dist[endR, endC] = BFSPath(startR, startC, endR, endC); // 최단거리
+
+            //bfsStack.Push(new Node(startR, startC));
+            //dist[startR, startC] = 0;
+            while (bfsStack.Count > 0)
+            {
+                Node currentNode = bfsStack.Pop();
+                way.Add(currentNode);
+                int currentRow = currentNode.Row;
+                int currentCol = currentNode.Col;
+
+                if (currentRow == startR && currentCol == startC)
+                {
+                    way.Reverse();
+                    return way;
+                }
+                    
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int moveRow = currentRow + directRow[i];
+                    int moveCol = currentCol + directColumn[i];
+
+                    if (moveRow < 0 || moveCol < 0 || moveRow >= mapRows || moveCol >= mapCols)
+                        continue;
+                    if (Map[moveRow, moveCol] == 1 || dist[moveRow, moveCol] != -1)
+                        continue;
+
+                    dist[moveRow, moveCol] = dist[moveRow, moveCol] - 1;
+                    bfsStack.Push(new Node(moveRow, moveCol));
+                    
+                }
+
+            }
+            // 애초에 여기까지 왔다 = 길이 없다
+            /*
+            if (dist[startR, startC] == -1)
+                return null;
+            */
+
+            return null;
+            // 그러면 찾고 역으로 돌아가기를 하면 되지 않을까?
+            // 그래서 스택을 생각하고 있기는 함
+            // 그러면 스택으로 최단거리 루트를 하나씩 먹기
+
+
+
+            // 갈 수 있는지 확인 방문한 곳인지, 벽인지 맵 크기
+
+
+            // 다시 뱉어내면서 경로 알려주기
+
+
+
+
+        }
+
+        public static bool DFSRecursive(int startR, int startC, int endR, int endC)
+        {
+            // 도착점에 도착했을때 재귀가 끝나는 종료 조건
+            if (startR == endR && startC == endC)
+            {
+                return true;
+            }
+
+            // 초기 값을 세팅해야함.
+            // 초기 위치를 방문했다는 초기화를 진행
+            // 여기에서 만약 해당 과정을 진행하지 않는 경우에 재귀로 이어지기 때문에 무한루프가 될 수도 있음.
+            isVisited[startR, startC] = true;
+
+            for (int i = 0; i < 4; i++)
+            {
+
+                int moveRow = startR + directRow[i];
+                int moveCol = startC + directColumn[i];
+
+                if (moveRow < 0 || moveRow >= Map.GetLength(0) || moveCol < 0 || moveCol >= Map.GetLength(1))
+                    continue;
+
+                if (Map[moveRow, moveCol] == 1)
+                    continue;
+
+                if (isVisited[moveRow, moveCol])
+                    continue;
+
+                if (DFSRecursive(moveRow, moveCol, endR, endC))
+                    return true;
+
+                // 자동으로 다음 방향을 확인한다.
+            }
+
+            return false;
+        }
 
         static void Main(string[] args)
         {
-            int result = BFSPath(0, 0, 2, 4);
+            int result = BFSPath(0, 0, 4, 4);
             Console.WriteLine($"도착지점까지의 최단거리 {result}");
 
+            List<Node> node = BFSFindPath(0, 0, 4, 4);
+            if(node != null)
+            {
+                for (int i = 0; i < node.Count - 1; i++)
+                {
+                    Console.WriteLine($"{node[i].Row}, {node[i].Col} ===> {node[i + 1].Row}, {node[i + 1].Col}");
+                }
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+            List<Node> node2 = BFSFindPath2(0, 0, 4, 4);
+            if( node2 != null)
+            {
+                for (int i = 0; i < node2.Count - 1; i++)
+                {
+                    Console.WriteLine($"{node2[i].Row}, {node2[i].Col} ===> {node2[i + 1].Row}, {node2[i + 1].Col}");
+                }
+            }
 
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
 
+            int mapRows = Map.GetLength(0);
+            int mapCols = Map.GetLength(1);
+
+            isVisited = new bool[mapRows, mapCols];
+            bool isReached = DFSRecursive(0, 0, 4, 4);
+            Console.WriteLine($"해당 위치에 도달할 수 있는지 : {isReached}");
 
             /*
             Random random = new Random();
